@@ -13,6 +13,29 @@ def preprocess(path,seed=47):
     df_merged.drop('Id_y',axis=1,inplace=True)
     return df_merged
 
+def oversample(dataframe,sample_size=15):
+    df = dataframe.copy()
+    res = None
+
+    for _, grp in df.groupby('Id'):
+        n = grp.shape[0] # number of single whale in the training set
+        if n < 15:
+            sample_times = sample_size - n
+        else:
+            sample_times = 0
+        duplicates = grp.sample(sample_times,replace=True)
+        sampled = pd.concat([grp,duplicates])
+    
+        if res is None:
+            res = sampled
+        else:
+            res = pd.concat([res,sampled])
+
+    return res
+
+
+
+
 
 def mapk(preds,targs,k=5):
     batch_pred = preds.sort(descending=True)[1] #batch_size * classes
@@ -23,3 +46,5 @@ def single_map(pred,label,k=5):
         return 1/ ((pred[:k] == label).nonzero().item()+1)
     except ValueError:
         return 0.0
+    
+ 
